@@ -2,20 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../context/AuthContext';
 import { workoutsAPI } from '../../api/apiService';
 import Button from '../../components/ui/Button';
-
-interface Workout {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  exercises: any[];
-}
+import { Workout } from '../workouts/[id]/page';
 
 export default function Dashboard() {
-  const { user } = useAuth();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,8 +16,12 @@ export default function Dashboard() {
       try {
         const data = await workoutsAPI.getWorkouts();
         setWorkouts(data);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to fetch workouts');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }

@@ -23,8 +23,12 @@ export default function ExercisesPage() {
       try {
         const data = await exercisesAPI.getExercises();
         setExercises(data);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to fetch exercises');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }

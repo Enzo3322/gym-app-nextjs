@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
@@ -17,8 +16,6 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
 
   const {
     register,
@@ -33,8 +30,12 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       // Redirect happens in the login function in AuthContext
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid email or password');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +118,7 @@ export default function LoginPage() {
           <div className="mt-6">
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
                   Sign up
                 </Link>

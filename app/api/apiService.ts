@@ -1,6 +1,14 @@
 import axios from 'axios';
-
+import { ExerciseFormData } from '../(protected)/exercises/create/page';
+import { WorkoutFormData } from '../(protected)/workouts/create/page';
+import { WorkoutExerciseFormData } from '../(protected)/workouts/[id]/add-exercise/page';
 const API_URL = 'http://45.56.114.56:3000/api';
+
+type UserData = {
+  name?: string;
+  email?: string;
+  password?: string;
+};
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -50,7 +58,7 @@ export const usersAPI = {
     const response = await api.get(`/users/${payload.id}`);
     return response.data;
   },
-  updateUser: async (id: string, userData: any) => {
+  updateUser: async (id: string, userData: UserData) => {
     const response = await api.put(`/users/${id}`, userData);
     return response.data;
   },
@@ -66,7 +74,7 @@ export const exercisesAPI = {
     const response = await api.get(`/exercises/${id}`);
     return response.data;
   },
-  createExercise: async (exerciseData: any) => {
+  createExercise: async (exerciseData: ExerciseFormData) => {
     const response = await api.post('/exercises', exerciseData);
     return response.data;
   },
@@ -82,11 +90,11 @@ export const workoutsAPI = {
     const response = await api.get(`/workouts/${id}`);
     return response.data;
   },
-  createWorkout: async (workoutData: any) => {
+  createWorkout: async (workoutData: WorkoutFormData) => {
     const response = await api.post('/workouts', workoutData);
     return response.data;
   },
-  updateWorkout: async (id: string, workoutData: any) => {
+  updateWorkout: async (id: string, workoutData: WorkoutFormData) => {
     const response = await api.put(`/workouts/${id}`, workoutData);
     return response.data;
   },
@@ -94,7 +102,7 @@ export const workoutsAPI = {
     const response = await api.delete(`/workouts/${id}`);
     return response.data;
   },
-  addExerciseToWorkout: async (workoutId: string, exerciseData: any) => {
+  addExerciseToWorkout: async (workoutId: string, exerciseData: WorkoutExerciseFormData) => {
     const response = await api.post(`/workouts/${workoutId}/exercises`, exerciseData);
     return response.data;
   },

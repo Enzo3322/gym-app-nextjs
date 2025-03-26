@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { workoutsAPI, exercisesAPI } from '../../../../api/apiService';
@@ -14,7 +14,7 @@ interface Exercise {
   muscleGroup: string;
 }
 
-interface WorkoutExerciseFormData {
+export interface WorkoutExerciseFormData {
   exerciseId: string;
   sets: number;
   reps: number;
@@ -23,7 +23,10 @@ interface WorkoutExerciseFormData {
   notes?: string;
 }
 
-export default function AddExerciseToWorkoutPage({ params }: { params: { id: string } }) {
+export default function AddExerciseToWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const workoutId = resolvedParams.id;
+  
   const router = useRouter();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +49,12 @@ export default function AddExerciseToWorkoutPage({ params }: { params: { id: str
       try {
         const data = await exercisesAPI.getExercises();
         setExercises(data);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to fetch exercises');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }
@@ -61,10 +68,14 @@ export default function AddExerciseToWorkoutPage({ params }: { params: { id: str
     setError(null);
     
     try {
-      await workoutsAPI.addExerciseToWorkout(params.id, data);
-      router.push(`/workouts/${params.id}`);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add exercise to workout');
+      await workoutsAPI.addExerciseToWorkout(workoutId, data);
+      router.push(`/workouts/${workoutId}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setSubmitting(false);
     }
   };
@@ -113,7 +124,7 @@ export default function AddExerciseToWorkoutPage({ params }: { params: { id: str
             </label>
             <select
               id="exerciseId"
-              className="w-full text-black p-2 rounded-md border-gray-300 border focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-black p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               {...register('exerciseId', { required: 'Please select an exercise' })}
             >
               <option value="">Select an exercise</option>

@@ -66,8 +66,12 @@ export default function ProfilePage() {
       if (data.email !== user.email && data.password) {
         await login(data.email, data.password);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update profile');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }

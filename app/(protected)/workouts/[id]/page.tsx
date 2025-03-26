@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { workoutsAPI, exercisesAPI } from '../../../api/apiService';
+import { workoutsAPI } from '../../../api/apiService';
 import Button from '../../../components/ui/Button';
 
 interface Exercise {
@@ -34,7 +34,10 @@ interface Workout {
   createdAt: string;
 }
 
-export default function WorkoutDetailPage({ params }: { params: { id: string } }) {
+export default function WorkoutDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const workoutId = resolvedParams.id;
+  
   const router = useRouter();
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,17 +47,21 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        const data = await workoutsAPI.getWorkout(params.id);
+        const data = await workoutsAPI.getWorkout(workoutId);
         setWorkout(data);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to fetch workout');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchWorkout();
-  }, [params.id]);
+  }, [workoutId]);
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this workout?')) {
@@ -63,10 +70,14 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
 
     setDeleteLoading(true);
     try {
-      await workoutsAPI.deleteWorkout(params.id);
+      await workoutsAPI.deleteWorkout(workoutId);
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to delete workout');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setDeleteLoading(false);
     }
   };

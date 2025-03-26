@@ -1,35 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { workoutsAPI } from '../../../api/apiService';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
+import { workoutsAPI } from '../../../../api/apiService';
+import Button from '../../../../components/ui/Button';
+import Input from '../../../../components/ui/Input';
 
-export interface WorkoutFormData {
+interface WorkoutFormData {
   name: string;
   description: string;
 }
 
-export default function CreateWorkoutPage() {
+export default function EditWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const workoutId = resolvedParams.id;
+  
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<WorkoutFormData>();
+
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      try {
+        setIsFetching(true);
+        const workout = await workoutsAPI.getWorkout(workoutId);
+        reset({
+          name: workout.name,
+          description: workout.description || '',
+        });
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchWorkout();
+  }, [workoutId, reset]);
 
   const onSubmit = async (data: WorkoutFormData) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const workout = await workoutsAPI.createWorkout(data);
-      router.push(`/workouts/${workout.id}`);
+      await workoutsAPI.updateWorkout(workoutId, data);
+      router.push(`/workouts/${workoutId}`);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -40,12 +68,24 @@ export default function CreateWorkoutPage() {
     }
   };
 
+  if (isFetching) {
+    return (
+      <div className="text-center py-10">
+        <svg className="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="mt-4 text-gray-600">Loading workout details...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Create New Workout</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Workout</h1>
         <p className="mt-2 text-gray-600">
-          Create a new workout program to track your exercises.
+          Update your workout program information.
         </p>
       </div>
 
@@ -103,7 +143,7 @@ export default function CreateWorkoutPage() {
               type="submit" 
               isLoading={isLoading}
             >
-              Create Workout
+              Update Workout
             </Button>
           </div>
         </form>

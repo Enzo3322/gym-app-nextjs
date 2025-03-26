@@ -64,8 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCookie('token', token, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
       setUser(user);
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -77,11 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const user = await authAPI.register(name, email, password);
-      // After registration, login the user
+      await authAPI.register(name, email, password);
+
       await login(email, password);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       throw err;
     } finally {
       setLoading(false);

@@ -3,16 +3,28 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { workoutsAPI } from '../../../api/apiService';
+import { exercisesAPI } from '../../../api/apiService';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 
-export interface WorkoutFormData {
+export interface ExerciseFormData {
   name: string;
   description: string;
+  muscleGroup: string;
 }
 
-export default function CreateWorkoutPage() {
+const muscleGroups = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Arms',
+  'Legs',
+  'Core',
+  'Full Body',
+  'Cardio',
+];
+
+export default function CreateExercisePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,15 +33,15 @@ export default function CreateWorkoutPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<WorkoutFormData>();
+  } = useForm<ExerciseFormData>();
 
-  const onSubmit = async (data: WorkoutFormData) => {
+  const onSubmit = async (data: ExerciseFormData) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const workout = await workoutsAPI.createWorkout(data);
-      router.push(`/workouts/${workout.id}`);
+      await exercisesAPI.createExercise(data);
+      router.push('/exercises');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -43,9 +55,9 @@ export default function CreateWorkoutPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Create New Workout</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Create New Exercise</h1>
         <p className="mt-2 text-gray-600">
-          Create a new workout program to track your exercises.
+          Add a new exercise to your collection.
         </p>
       </div>
 
@@ -69,13 +81,34 @@ export default function CreateWorkoutPage() {
           <div>
             <Input
               id="name"
-              label="Workout Name"
+              label="Exercise Name"
               type="text"
               fullWidth
-              placeholder="e.g., Monday Upper Body"
+              placeholder="e.g., Bench Press"
               error={errors.name?.message}
-              {...register('name', { required: 'Workout name is required' })}
+              {...register('name', { required: 'Exercise name is required' })}
             />
+          </div>
+
+          <div>
+            <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 mb-1">
+              Primary Muscle Group
+            </label>
+            <select
+              id="muscleGroup"
+              className="w-full text-black p-2 rounded-md border-gray-300 border focus:border-blue-500 focus:ring-blue-500"
+              {...register('muscleGroup', { required: 'Muscle group is required' })}
+            >
+              <option value="">Select a muscle group</option>
+              {muscleGroups.map(group => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+            </select>
+            {errors.muscleGroup && (
+              <p className="mt-1 text-sm text-red-600">{errors.muscleGroup.message}</p>
+            )}
           </div>
 
           <div>
@@ -84,7 +117,7 @@ export default function CreateWorkoutPage() {
             </label>
             <textarea
               id="description"
-              placeholder="Describe your workout program"
+              placeholder="Describe how to perform the exercise correctly"
               rows={4}
               className="w-full text-black p-2 rounded-md border-gray-300 border focus:border-blue-500 focus:ring-blue-500"
               {...register('description')}
@@ -103,7 +136,7 @@ export default function CreateWorkoutPage() {
               type="submit" 
               isLoading={isLoading}
             >
-              Create Workout
+              Create Exercise
             </Button>
           </div>
         </form>
