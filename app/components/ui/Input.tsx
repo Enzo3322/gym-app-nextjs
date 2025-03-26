@@ -19,7 +19,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={`${fullWidth ? 'w-full' : ''}`}>
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium font-semibold text-gray-700 mb-1">
+          <label htmlFor={props.id} className="block text-sm font-semibold text-gray-700 mb-1">
             {label}
           </label>
         )}
