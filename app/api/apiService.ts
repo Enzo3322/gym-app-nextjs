@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ExerciseFormData } from '../(protected)/exercises/create/page';
 import { WorkoutFormData } from '../(protected)/workouts/create/page';
 import { WorkoutExerciseFormData } from '../(protected)/workouts/[id]/add-exercise/page';
-const API_URL = 'http://45.56.114.56:3000/api';
+const API_URL = 'http://45.56.114.56:3002/api';
 
 type UserData = {
   name?: string;

@@ -6,23 +6,12 @@ import Link from 'next/link';
 import { workoutsAPI } from '../../../api/apiService';
 import Button from '../../../components/ui/Button';
 
-interface Exercise {
-  id: string;
-  name: string;
-  description: string;
-  muscleGroup: string;
-}
-
 interface WorkoutExercise {
-  id: string;
   exerciseId: string;
-  workoutId: string;
-  sets: number;
   reps: number;
   weight: number;
-  restTime: number;
-  notes: string;
-  exercise: Exercise;
+  name: string;
+  muscleGroup: string;
 }
 
 export interface Workout {
@@ -49,6 +38,8 @@ export default function WorkoutDetailPage({ params }: { params: Promise<{ id: st
       try {
         const data = await workoutsAPI.getWorkout(workoutId);
         setWorkout(data);
+
+        console.log({data})
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
@@ -156,47 +147,26 @@ export default function WorkoutDetailPage({ params }: { params: Promise<{ id: st
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Exercise
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sets
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reps
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Weight (kg)
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rest (sec)
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Notes
-                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exercise</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reps</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Muscle Group</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {workout.exercises.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.exerciseId}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{item.exercise.name}</div>
-                    <div className="text-sm text-gray-500">{item.exercise.muscleGroup}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.sets}
+                    <div className="text-sm font-medium text-gray-900">{item.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.reps}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.weight || '-'}
+                    {item.weight}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.restTime || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.notes || '-'}
+                    {item.muscleGroup}
                   </td>
                 </tr>
               ))}
